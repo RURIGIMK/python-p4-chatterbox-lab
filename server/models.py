@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, Column, Integer, String, DateTime
+from sqlalchemy.sql import func
 from sqlalchemy_serializer import SerializerMixin
 
 metadata = MetaData(naming_convention={
@@ -12,3 +13,18 @@ class Message(db.Model, SerializerMixin):
     __tablename__ = 'messages'
 
     id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String, nullable=False)
+    username = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=func.now())
+    updated_at = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
+    
+    # Add the required SerializerMixin fields
+    serialize_rules = ('-created_at', '-updated_at')
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'body': self.body,
+            'username': self.username,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+        }
